@@ -157,14 +157,44 @@ def main():
 
 The few parameters that really made a huge difference tunning where firstly the `min_val` , `max_val`, `learning_rate` , `epsilon` and `num_steps`. The more I have increased the number of steps, the more promising I found some of the results. However, HOWEVER , it took an exceptionally longer amount of time to test and verify the results of my tweaked Rainbow DQN.
 
-Until one fateful moment, where my blue friend Sonic did so well achieving an score of `4354.68` which placed Sonic at a higher place on the leaderboard around the first twenty spots.
+Until one fateful moment, where my blue friend Sonic did so well achieving an score of `4354.68` which placed Sonic at a higher place on the leaderboard around the first twenty top spots.
 
-<!-- blank line -->
-<figure class="video_container">
-  <video controls="true" allowfullscreen="true" poster="">
-    <source src="./modified-agents/videos/higest_score.mp4" type="video/mp4">
-  </video>
-</figure>
-<!-- blank line -->
+Here is a video to demonstrate.
+[![Highest Score](http://img.youtube.com/vi/zkqBV34kCOM/0.jpg)](https://www.youtube.com/embed/zkqBV34kCOM "SonicHedgehog higest score")
 
-Feeling confident and strong 
+Feeling confident and strong , I decided to tweak my learning steps, learning rate and min and max values. At the same time, I went ahead and re-kicked the same job that generated the highest score to see how I can repeat the same score if not higher. I however noticed pretty fast, the more I have trained the same docker image (with the higest score) the less I was able to reproduce the high score again with the same code. Sometimes I have even gotten a score that is so much lower than the scores I have expected before.
+
+While I wasn't sure why running the same code on the same hardware have yielded different results. I went ahead training locally and re-tweaking the parameters. At the end of the competition I was able to get a score within the 3k range, however , not within the 4k range rewards I have anticipated to go back to.
+
+
+#### Lessons Learnt:
+
+One of the main lessons I have learnt throughout the competition which made a huge difference in scaling and speeding training sonic, was how to customize the reward function.
+
+Here is the example of the custom reward function I have used with Rainbow DQN:
+
+```
+
+class RewardScaler(gym.RewardWrapper):
+    """
+    Bring rewards to a reasonable scale for PPO.
+
+    This is incredibly important and effects performance
+    drastically.
+    """
+    def reward(self, reward):
+        if reward > 2500:
+            return reward * 0.09
+        elif reward > 1700:
+            return reward *  0.07
+        else:
+            return reward * 0.05
+```
+
+One of the main lessons I have learnt, thinking about how the game is structures is giving higher scales of reward when sonic hits higher reward items. It helped me scale my learning or rewards linearly, I can see sonic improving in the begining and learning faster.
+
+
+#### So what now?
+
+Well, I will ceratinly read all the awesome blog posts my peers have written for their implementation, and continue learning and experimenting with the retro gym :) 
+To OpenAI: thank you so much for the opportunity!
