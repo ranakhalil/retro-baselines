@@ -1,0 +1,132 @@
+### How I soared high training with sonic, then crash landed in a Deep Q-world
+
+#### The summary:
+
+When I started training Sonic via Rainbow DQN, jerk agent and ppo, I noticed the more you train sonic it doesn't necessairly mean sonic gets better and smarter. 
+
+During each training set of steps, sonic seems to perform really well, then get exponentially worse and end there. 
+
+Seeing those results I was left with few interesting choices:
+1- Reduce the number of steps to train Sonic
+2- Reduce the number of epochs to train Sonic for n-steps
+3- Utilize and test a variety of learning rates and epsilons to tweak the rate at which Sonic will learn.
+4- Build something simple that incrementally you can train sonic and understand why that behavior happens in repition
+5- Build tools that help Sonic pause or freeze model, once it reaches an optimal level of training
+
+#### What actually happened:
+
+In the begining: I started the competition looking through a simple agent implementation, the first question I was trying to answer was: What is the env I am using to train my agent, and how can I test?
+
+Through the very simple example here:
+
+```
+from retro_contest.local import make
+
+
+def main():
+    env = make(game='SonicTheHedgehog-Genesis', state='GreenHillZone.Act1')
+    obs = env.reset()
+    while True:
+        # obs, rew, done, info = env.step(env.action_space.sample())
+        # env.render()
+        # if done:
+        #     obs = env.reset()
+        action = env.action_space.sample()
+        #  ["X", "Z", "TAB", "ENTER", "UP", "DOWN", "LEFT", "RIGHT", "C", "A", "S", "D"],
+        action[7] = 1
+        action[4] = 1 #UP
+        obs, rew, done, info = env.step(action)
+        env.render()
+        if done:
+            print('episode complete')
+            env.reset()
+
+
+if __name__ == '__main__':
+    main()
+```
+
+I was able to see Sonic navigating, and jumping and fulfilling certain steps I was feeding.
+
+The next step was to experiment with a variety of baselines scripts. I started with the JERK script:
+
+```
+EMA_RATE = 0.1
+EXPLOIT_BIAS = 0.15
+TOTAL_TIMESTEPS = int(1e6)
+
+def main():
+    """Run JERK on the attached environment."""
+    
+    # env = make(
+    #     game='SonicTheHedgehog-Genesis', 
+    #     state='SpringYardZone.Act2', 
+    #     scenario='contest'
+    # )
+
+    env = grc.RemoteEnv('tmp/sock')
+    env = TrackedEnv(env)
+    new_ep = True
+    solutions = []
+    while True:
+        if new_ep:
+            if (solutions and
+                    random.random() < EXPLOIT_BIAS + env.total_steps_ever / TOTAL_TIMESTEPS):
+                solutions = sorted(solutions, key=lambda x: np.mean(x[0]))
+                best_pair = solutions[-1]
+                new_rew = exploit(env, best_pair[1])
+                best_pair[0].append(new_rew)
+                print('replayed best with reward %f' % new_rew)
+                continue
+            else:
+                env.reset()
+                new_ep = False
+        rew, new_ep = move(env, 100)
+        if not new_ep and rew <= 0:
+            print('backtracking due to negative reward: %f' % rew)
+            _, new_ep = move(env, 70, left=True)
+        if new_ep:
+            solutions.append(([max(env.reward_history)], env.best_sequence()))
+
+def move(env, num_steps, left=False, jump_prob=1.0 / 10.0, jump_repeat=4):
+    """
+    Move right or left for a certain number of steps,
+    jumping periodically.
+    """
+    total_rew = 0.0
+    done = False
+    steps_taken = 0
+    jumping_steps_left = 0
+    while not done and steps_taken < num_steps:
+        action = np.zeros((12,), dtype=np.bool)
+        action[6] = left
+        action[7] = not left
+        if jumping_steps_left > 0:
+            action[0] = True
+            jumping_steps_left -= 1
+        else:
+            if random.random() < jump_prob:
+                jumping_steps_left = jump_repeat - 1
+                action[0] = True
+        _, rew, done, _ = env.step(action)
+        # env.render()
+        total_rew += rew
+        steps_taken += 1
+        if done:
+            break
+    return total_rew, done
+```
+
+What was really awesome about the jerk agent as its name indicates, how you can learn enough and still make decent progress navigating through the levels.
+
+Now that I have gained a lot more confidence, and reading through the tech report, realized to level up in the competition experimenting with PPO and Rainbow DQN is a must.
+
+Experimenting with both Rainbow DQN and PPO, noticed I was getting pretty good results with Rainbow DQN vs PPO. In which case, I decided to deciate the rest of the month and a half at this point to tune and look exclusively into Rainbow DQN.
+
+### Rainbow DQN Baseline:
+
+Through repeated training with Rainbow DQN, I noticed pretty fast, at a certain level of training Sonic seems to suffer a cognition overload and does worse in training to go through the levels.
+
+Which brought me to the next step to introspect the values I have used tunning the rainbow DQN baseline:
+
+```
