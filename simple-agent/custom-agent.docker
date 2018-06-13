@@ -1,0 +1,3 @@
+FROM openai/retro-agent
+ADD custom_agent.py .
+CMD ["python", "-u", "/root/compo/custom_agent.py"]
