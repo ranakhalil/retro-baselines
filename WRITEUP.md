@@ -159,9 +159,12 @@ The few parameters that really made a huge difference tunning where firstly the 
 
 Until one fateful moment, where my blue friend Sonic did so well achieving an score of `4354.68` which placed Sonic at a higher place on the leaderboard around the first twenty spots.
 
-Here is the video of the highest score run:
+<!-- blank line -->
+<figure class="video_container">
+  <video controls="true" allowfullscreen="true" poster="">
+    <source src="./modified-agents/videos/higest_score.mp4" type="video/mp4">
+  </video>
+</figure>
+<!-- blank line -->
 
-<video width="320" height="200" controls preload> 
-    <source src="https://github.com/ranakhalil/retro-baselines/blob/master/modified_agents/videos/highest_score.mp4">
-    </source>  
-</video>
+Feeling confident and strong 
