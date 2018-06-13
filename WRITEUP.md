@@ -130,3 +130,38 @@ Through repeated training with Rainbow DQN, I noticed pretty fast, at a certain 
 Which brought me to the next step to introspect the values I have used tunning the rainbow DQN baseline:
 
 ```
+def main():
+    """Run DQN until the environment throws an exception."""
+    env = AllowBacktracking(make_env(stack=False, scale_rew=False))
+    env = BatchedFrameStack(BatchedGymEnv([[env]]), num_images=4, concat=False)
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True # pylint: disable=E1101
+    with tf.Session(config=config) as sess:
+        dqn = DQN(*rainbow_models(sess,
+                                  env.action_space.n,
+                                  gym_space_vectorizer(env.observation_space),
+                                  min_val=-200,
+                                  max_val=200))
+        player = NStepPlayer(BatchedPlayer(env, dqn.online_net), 5)
+        optimize = dqn.optimize(learning_rate=1e-5, epsilon=1.5e-4)
+        sess.run(tf.global_variables_initializer())
+        dqn.train(num_steps=2100000, # Make sure an exception arrives before we stop.
+                  player=player,
+                  replay_buffer=PrioritizedReplayBuffer(500000, 0.5, 0.4, epsilon=0.5),
+                  optimize_op=optimize,
+                  train_interval=1,
+                  target_interval=5192,
+                  batch_size=32,
+                  min_buffer_size=20000)
+```
+
+The few parameters that really made a huge difference tunning where firstly the `min_val` , `max_val`, `learning_rate` , `epsilon` and `num_steps`. The more I have increased the number of steps, the more promising I found some of the results. However, HOWEVER , it took an exceptionally longer amount of time to test and verify the results of my tweaked Rainbow DQN.
+
+Until one fateful moment, where my blue friend Sonic did so well achieving an score of `4354.68` which placed Sonic at a higher place on the leaderboard around the first twenty spots.
+
+Here is the video of the highest score run:
+
+<video width="320" height="200" controls preload> 
+    <source src="https://github.com/ranakhalil/retro-baselines/blob/master/modified_agents/videos/highest_score.mp4">
+    </source>  
+</video>
