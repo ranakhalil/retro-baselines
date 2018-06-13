@@ -159,8 +159,11 @@ The few parameters that really made a huge difference tunning where firstly the 
 
 Until one fateful moment, where my blue friend Sonic did so well achieving an score of `4354.68` which placed Sonic at a higher place on the leaderboard around the first twenty top spots.
 
-Here is a video to demonstrate.
+<b>Here is a video to demonstrate:</b>
+<br/>
+
 [![Highest Score](http://img.youtube.com/vi/zkqBV34kCOM/0.jpg)](https://www.youtube.com/embed/zkqBV34kCOM "SonicHedgehog higest score")
+<br/>
 
 Feeling confident and strong , I decided to tweak my learning steps, learning rate and min and max values. At the same time, I went ahead and re-kicked the same job that generated the highest score to see how I can repeat the same score if not higher. I however noticed pretty fast, the more I have trained the same docker image (with the higest score) the less I was able to reproduce the high score again with the same code. Sometimes I have even gotten a score that is so much lower than the scores I have expected before.
 
